@@ -3,12 +3,114 @@
 
 <mapper namespace="com.zsc.modules.job.dao.ScheduleJobDao">
 
-	<!-- 批量更新状态 -->
-	<update id="updateBatch">
-		update schedule_job set status = #{status} where job_id in
+	<resultMap id="BaseScheduleJobMapper" type="com.zsc.modules.job.entity.ScheduleJobEntity">
+		<id property="jobId" column="job_id" javaType="Long" />
+		<result property="beanName" column="bean_name" javaType="String"/>
+		<result property="params" column="params" javaType="String"/>
+		<result property="cronExpression" column="cron_expression" javaType="String"/>
+		<result property="status" column="status" javaType="Integer"/>
+		<result property="remark" column="remark" javaType="String"/>
+		<result property="createTime" column="create_time" javaType="Date"/>
+	</resultMap>
+
+	<sql id="scheduleJobColumn">
+		job_id,
+		bean_name,
+		params,
+		cron_expression,
+		status,
+		remark,
+		create_time
+	</sql>
+
+	<sql id="select">
+		SELECT
+		<include refid="scheduleJobColumn"></include>
+		FROM schedule_job
+	</sql>
+
+
+	<select id="selectById" parameterType="Long" resultMap="BaseScheduleJobMapper">
+		<include refid="select"></include>
+		WHERE
+		job_id = #{jobId} AND deleteFlag = 0
+	</select>
+
+	<select id="list" resultMap="BaseScheduleJobMapper">
+		<include refid="select"></include>
+		WHERE deleteFlag = 0
+	</select>
+
+	<select id="selectByParams" parameterType="Map" resultMap="BaseScheduleJobMapper">
+		<include refid="select"></include>
+		WHERE
+		job_id > 0
+		<if test="beanName != null">
+			AND bean_name = #{bean_name}
+		</if>
+		<if test="jobIds != null">
+			AND job_id IN(${jobIds})
+		</if>
+		<if test="status != nuu">
+			AND status = #{status}
+		</if>
+		AND deleteFlag = 0
+	</select>
+
+	<insert id="insert" parameterType="com.zsc.modules.job.entity.ScheduleJobEntity" useGeneratedKeys="true">
+        INSERT INTO schedule_job
+        (
+		bean_name,
+		params,
+		cron_expression,
+		status,
+		remark,
+		create_time
+        )
+        VALUES
+        (
+        #{beanName},
+        #{params},
+        #{cronExpression},
+        #{status},
+        #{remark},
+        NOW()
+        )
+    </insert>
+
+	<update id="update" parameterType="com.zsc.modules.job.entity.ScheduleJobEntity">
+        UPDATE schedule_job SET
+        bean_name = #{bean_name},
+        params = #{params},
+        cron_expression = #{cronExpression},
+        status = #{status},
+        remark = #{remark}
+        WHERE job_id = #{jobId}
+    </update>
+
+	<update id="updateDeleteById" parameterType="Long">
+		UPDATE schedule_job SET deleteFlag = 1
+		WHERE job_id = #{jobId}
+	</update>
+
+	<update id="updateDeleteBatch" parameterType="List">
+		UPDATE schedule_job SET
+		deleteFlag = 1
+		WHERE job_id IN
 		<foreach item="jobId" collection="list"  open="(" separator="," close=")">
 			#{jobId}
 		</foreach>
+	</update>
+
+	<!-- 批量更新状态 -->
+	<update id="updateBatch">
+		UPDATE schedule_job SET
+		status = #{status}
+		WHERE job_id IN
+		<foreach item="jobId" collection="list"  open="(" separator="," close=")">
+			#{jobId}
+		</foreach>
+		AND deleteFlag = 0
 	</update>
 
 </mapper>
