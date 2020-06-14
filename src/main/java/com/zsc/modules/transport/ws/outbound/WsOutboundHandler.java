@@ -1,4 +1,4 @@
-package com.zsc.modules.ws.outbound;
+package com.zsc.modules.transport.ws.outbound;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.handler.TextWebSocketHandler;

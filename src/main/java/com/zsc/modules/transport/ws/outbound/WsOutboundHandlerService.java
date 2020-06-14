@@ -1,4 +1,4 @@
-package com.zsc.modules.ws.outbound;
+package com.zsc.modules.transport.ws.outbound;
 
 /**
  * TODO
